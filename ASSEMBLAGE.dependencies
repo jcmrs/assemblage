@@ -1,0 +1,49 @@
+# 🏛️ Assemblage Dependencies
+#
+# (Version 2.0.0 - This version adds `uv` and the external `spec-kit`)
+#
+# This file is an "Anchor" that defines the "Bill of Materials" for
+# the "Assemblage" (the "house" framework).
+#
+# It lists all the external "How" (Platform) dependencies required
+# for the framework's "Utilities," "Guardrails," and "Guides" to function.
+#
+# The "tools/assemblage-setup.sh" Utility uses this file as its
+# checklist to validate and provision the local environment.
+#
+# --- (List one dependency per line) ---
+
+# 1. Core Versioning (The "Foundation")
+# Purpose: Powers our "Project = Repository" imperative.
+git
+
+# 2. YAML Parser (The "Wiring" tool)
+# Purpose: Required by our "tools/validate-wiring.sh" Utility
+# to parse our "config/" schemas (`.yml` files).
+yq
+
+# 3. Test Framework (The "Utility" tester)
+# Purpose: Required by the "tools/run-assemblage-tests.sh" Utility
+# to run our BATS test suite (as seen in `tests/`).
+bats
+
+# 4. Shell Linter (The "Code Quality" check)
+# Purpose: Required by our "lint" Utility to validate all "Utility"
+# scripts (`tools/*.sh`). We adopt the original's `.shellcheckrc`.
+shellcheck
+
+# 5. YAML Linter (The "Config Quality" check)
+# Purpose: Required by our "lint" Utility to validate all "Config"
+# schemas (`config/*.yml`). We adopt the original's `.yamllint.yml`.
+yamllint
+
+# 6. Spec Kit Installer (NEW - Per Vision Owner Research)
+# Purpose: The "best practice" installer (uv/uvx) required to
+# install `spec-kit` from its GitHub repository.
+uv
+
+# 7. Spec Kit (NEW - External Guide Framework)
+# Purpose: The external "Spec Driven Development" framework
+# used by the "Architect" and "Builder" Workbenches.
+# This is installed *by* `uv`.
+spec-kit
