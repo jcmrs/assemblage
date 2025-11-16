@@ -1,0 +1,69 @@
+# 💡 config/nudges.yml
+# (Version 1.7.0 - The "Behavioural Nudge" Library)
+#
+# This file is an "Anchor." It is the central "library" of
+# "behavioural microprompts" (our "Nudges").
+#
+# This file is a passive "phone book" of "practical philosophy."
+# It does NOT "do" anything.
+#
+# It is "read" by our "Utilities" (e.g., `tools/nudge.sh`) and
+# "Guardrails" (e.g., `.githooks/pre-commit`) at the moment
+# a "Nudge" is required.
+#
+# This "How" (Platform) is:
+# - Extensible: We can add new "philosophy" here without
+#   breaking scripts (by following the
+#   `guides/SYSTEM/assemblage-change-protocol.md`).
+# - AI-First: It provides "behavioural" triggers for the AI's
+#   "learning flow," not "scripted" tasks.
+# - Lightweight: It's a simple, human-readable YAML file.
+
+nudges:
+
+  # ---
+  # "Assumption" Nudge (from your "Assumption Check" insight)
+  # ---
+  assumption_check: |
+    Pause and reflect. Assumptions are beliefs we take for granted
+    without explicit verification. They're often invisible until
+    challenged. What are the invisible assumptions in your
+    completed work? Are they validated?
+
+  # ---
+  # "Holistic" Nudge (from our "Reflection 1")
+  # ---
+  holistic_check: |
+    Pause and zoom out. You are a Holistic System Thinker.
+    What are the 'ripple effects' of this 'deep focus' task
+    on the rest of the 'house'? (e.g., on 'decisions/'
+    or 'product/').
+
+  # ---
+  # "Integrity" Nudge (from our "Reflection 4")
+  # ---
+  house_vs_furniture_check: |
+    This commit mixes 'house' (Assemblage) and 'furniture' (Product)
+    files. 'Process Memory' (a commit) must be atomic.
+    Nudge: You MUST separate these. First, commit the 'Product'
+    ('src/', 'specs/'), then follow the
+    'guides/SYSTEM/assemblage-change-protocol.md' to commit
+    the 'house' ('config/', 'tools/').
+
+  # ---
+  # "Self-Provisioning" Nudge (from our "Reflection 2")
+  # ---
+  self_provisioning_check: |
+    As the Explorer, if the 'Why' (Vision) requires a 'How' (Platform)
+    that does not exist (like a new 'Cognitive Specialist'), *do not block*.
+    State your plan to *first* self-provision this 'How' by following
+    the 'guides/SYSTEM/assemblage-change-protocol.md', and *then* continue.
+
+  # ---
+  # "Comprehension" Nudge (from our "Reflection 3")
+  # ---
+  comprehension_check: |
+    As the Auditor, do not just 'check for file existence.'
+    *Validate comprehension*. Does the 'Product' ('src/') *truly*
+    fulfill the 'Blueprint' ('specs/')? Use the 'speckit.analyze'
+    Guide to check for *alignment gaps*.
