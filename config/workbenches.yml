@@ -1,0 +1,151 @@
+# 📐 config/workbenches.yml
+# (Version 2.0.0 - This version "re-wires" the Assemblage after
+#  "demolishing" .claude/ and "triaging" docs/, and "wires in"
+#  the "Contextual Nudges".)
+#
+# This is the "Master Wiring Diagram" for the Assemblage.
+# It defines the 4 Workbenches and connects them to their
+# components. This file IS "Architecture as Code."
+
+workbenches:
+
+  # ====================================================================
+  # WORKBENCH 0: THE EXPLORER
+  # (This "thinking" workbench does NOT use Spec Kit.)
+  # ====================================================================
+  explorer:
+    description: "Phase 0: The strategic 'Why' and 'What' conversation."
+    
+    # --- Connects to Anchors (Context) ---
+    context_anchors:
+      - "FOUNDATION.md"
+      - "README.md"
+      - "decisions/"
+      - "knowledge/learnings/"
+      - "ideas/"
+      - "product/"
+      - "backlog/"
+
+    # --- Connects to Guides (Specialists) ---
+    guides:
+      - "specialist:ui_principles"
+      - "specialist:security_auditor"
+      - "specialist:database_architect"
+
+    # --- Connects to Nudges (Habits) ---
+    # This "thinking" Workbench can "call" these "Nudges"
+    # (from `config/nudges.yml`) using the "tools/nudge.sh" telephone.
+    available_nudges:
+      - "holistic_check"
+      - "assumption_check"
+      - "self_provisioning_check"
+
+  # ====================================================================
+  # WORKBENCH 1: THE ARCHITECT
+  # (This "technical" workbench *DOES* use Spec Kit.)
+  # ====================================================================
+  architect:
+    description: "Phase 1: Turn the 'Validated Concept' into a 'Blueprint'."
+    
+    # --- Connects to Anchors (Context) ---
+    context_anchors:
+      - "FOUNDATION.md"
+      - "decisions/"
+      - "knowledge/research/"
+      - "backlog/"
+      - "product/"
+
+    # --- (REWIRED) Connects to External Commands (Spec Kit) ---
+    # We "wire" this "Workbench" to the external "spec-kit"
+    # commands installed by our `tools/assemblage-setup.sh` Utility.
+    external_commands:
+      - "specify"   # (From Spec Kit)
+      - "plan"      # (From Spec Kit)
+      - "analyze"   # (From Spec Kit)
+      - "clarify"   # (From Spec Kit)
+      - "constitution" # (From Spec Kit)
+
+    # --- Connects to Nudges (Habits) ---
+    # This "thinking" Workbench can "call" these "Nudges".
+    available_nudges:
+      - "holistic_check"
+      - "assumption_check"
+
+  # ====================================================================
+  # WORKBENCH 2: THE BUILDER
+  # (This "technical" workbench *DOES* use Spec Kit.)
+  # ====================================================================
+  builder:
+    description: "Phase 2: Follow the 'Blueprint' to write the 'Product' code."
+    
+    # --- Connects to Anchors (Context) ---
+    context_anchors:
+      - "specs/{{current_spec}}/spec.md"
+      - "specs/{{current_spec}}/plan.md"
+      - "specs/{{current_spec}}/tasks.md"
+
+    # --- (REWIRED) Connects to External Commands (Spec Kit) ---
+    external_commands:
+      - "tasks"     # (From Spec Kit)
+      - "implement" # (From Spec Kit)
+      - "checklist" # (From Spec Kit)
+
+    # --- Connects to Nudges (Habits) ---
+    # This "doing" Workbench has NO access to
+    # behavioural "Nudges." This is the "firewall"
+    # to prevent "interference" with the code-gen model.
+    available_nudges: []
+
+    # --- Connects to Guardrails (Workspace Enforcement) ---
+    guardrail_workspace:
+      # The "Builder" CAN write to these "Product" ("furniture") folders:
+      read_write:
+        - "src/"
+        - "tests/"
+        - "specs/"
+      # The "Builder" CANNOT write to "Assemblage" ("house") folders:
+      read_only:
+        - "config/"
+        - "tools/"
+        - ".githooks/"
+        - "decisions/"
+        - "knowledge/"
+        - "guides/"
+        - "product/"
+        - "backlog/"
+        - "ideas/"
+        - "FOUNDATION.md"
+        - "README.md"
+        - "GEMINI.md"
+        - "CLAUDE.md"
+        - "ASSEMBLAGE.dependencies"
+        - "ASSEMBLAGE.version"
+        - "CHANGELOG.md"
+        - "config/nudges.yml" 
+
+  # ====================================================================
+  # WORKBENCH 3: THE AUDITOR
+  # ====================================================================
+  auditor:
+    description: "Phase 3: Final quality control and process validation."
+    
+    # --- (REWIRED) Connects to Anchors (Context) ---
+    # "Triage" complete: The "dead wire" is fixed.
+    context_anchors:
+      - "knowledge/learnings/patterns/"
+      # This path is "re-wired" from the "junk drawer" `docs/`
+      # to its new "triaged" home in `guides/SYSTEM/`.
+      - "guides/SYSTEM/completeness-review.md"
+
+    # --- Connects to Utilities (House Services) ---
+    utilities:
+      - "tools/review-completeness.sh"
+      - "tools/validate-assemblage.sh"
+      - "tools/generate-status.sh"
+      - "tools/generate-ideas-index.sh"
+
+    # --- Connects to Nudges (Habits) ---
+    # This "thinking" Workbench can "call" these "Nudges".
+    available_nudges:
+      - "comprehension_check"
+      - "assumption_check"
