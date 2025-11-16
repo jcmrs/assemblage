@@ -1,0 +1,45 @@
+# "Assemblage 3.0.1" (Modular Delivery) Checklist
+
+  * **Package 1: The "Constitution"**
+      * [X] `FOUNDATION.md`
+  * **Package 2: The "Identity & Onboarding"**
+      * [ ] `GEMINI.md`
+      * [ ] `CLAUDE.md`
+      * [ ] `guides/SYSTEM/onboarding-protocol.md`
+  * **Package 3: The "Conveyor Belt" (Anchors)**
+      * [ ] `README.md`
+      * [ ] `ideas/TEMPLATE.md`
+      * [ ] `product/README.md`
+      * [ ] `product/TEMPLATE.md`
+      * [ ] `backlog/items/TEMPLATE.md`
+  * **Package 4: The "Process Memory" (Anchors)**
+      * [ ] `decisions/TEMPLATE.md`
+      * [ ] `knowledge/learnings/patterns/gaps-at-every-corner.md`
+  * **Package 5: The "Configuration" (Schemas)**
+      * [ ] `config/workbenches.yml`
+      * [ ] `config/specialists.yml`
+      * [ ] `config/nudges.yml`
+      * [ ] `ASSEMBLAGE.dependencies`
+      * [ ] `ASSEMBLAGE.version`
+  * **Package 6: The "System Guides"**
+      * [ ] `guides/SYSTEM/assemblage-change-protocol.md`
+      * [ ] `guides/SYSTEM/constitutional-review.md`
+      * [ ] `guides/SYSTEM/recovery-drill.md`
+      * [ ] `guides/SYSTEM/triage-docs-protocol.md`
+      * [ ] `guides/SYSTEM/utility-test-protocol.md`
+      * [ ] `guides/TEMPLATES/cognitive_specialist_template.md`
+  * **Package 7: The "Guardrails" (Security)**
+      * [ ] `.githooks/pre-commit`
+      * [ ] `.githooks/pre-push`
+      * [ ] `.githooks/commit-msg`
+  * **Package 8: The "Utilities" (The "Tools")**
+      * [ ] `tools/assemblage-setup.sh`
+      * [ ] `tools/create-new-specialist.sh`
+      * [ ] `tools/demolish-legacy-systems.sh`
+      * [ ] `tools/lint.sh`
+      * [ ] `tools/nudge.sh`
+      * [ ] `tools/run-assemblage-tests.sh`
+      * [ ] `tools/triage-docs.sh`
+      * [ ] `tools/validate-assemblage.sh`
+      * [ ] `tools/validate-wiring.sh`
+      * [ ] `tools/validate-workspace.sh`
