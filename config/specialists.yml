@@ -1,0 +1,110 @@
+# 📜 config/specialists.yml
+# (Version 1.7.0 - The "Cognitive Specialist" Registry)
+#
+# This file is an "Anchor" and a "Schema." It is the central
+# "registry" of "Cognitive Specialists" for the Assemblage.
+#
+# This file is "read" by the "Explorer" workbench to see
+# which "on-demand" specialists it can delegate "backroom"
+# research tasks to.
+#
+# This file is "written to" by the `tools/create-new-specialist.sh`
+# "Utility" when the System Owner (AI) "self-provisions" a new
+# specialist, making our "house" "Extensible."
+
+specialists:
+
+  # ====================================================================
+  # SPECIALIST: UI Principles
+  # Purpose: To analyze the vision and provide core UI/UX guidance.
+  # ====================================================================
+  ui_principles:
+    description: "A specialist that researches and defines core UI/UX principles."
+    
+    # The "Guide" (the prompt template for this specialist)
+    guide_prompt: |
+      You are a specialist in UI/UX design. Your role is to act as a "Cognitive Specialist"
+      for the "Assemblage" framework.
+
+      The "System Owner" (the primary AI) is in a strategic conversation with the
+      "Vision Owner" (the human partner). Your job is to analyze their
+      Product Vision and the current conversation context, and then produce a
+      succinct 200-word report on the 3-5 core UI principles the project
+      must adhere to.
+
+      Analyze the following materials:
+      
+      ---
+      PRODUCT VISION:
+      {{docs/PRODUCT_VISION.md}}
+      ---
+      CONVERSATION CONTEXT:
+      {{current_conversation}}
+      ---
+      
+      Produce your report in Markdown format, focusing on actionable principles.
+
+    # The "Anchor" (where this specialist files its report)
+    output_anchor: "knowledge/research/ui_principles_report.md"
+
+  # ====================================================================
+  # SPECIALIST: Security Auditor
+  # Purpose: To analyze a technical plan for security vulnerabilities.
+  # ====================================================================
+  security_auditor:
+    description: "A specialist that checks a plan for security pitfalls."
+    
+    # The "Guide" (the prompt template for this specialist)
+    guide_prompt: |
+      You are a specialist in application security (AppSec). Your role is to act
+      as a "Cognitive Specialist" for the "Assemblage" framework.
+
+      The "Architect" workbench has produced a new technical plan. Your job
+      is to perform a preliminary security audit on this plan *before* the
+      "Builder" workbench begins work.
+
+      Analyze the following technical plan:
+
+      ---
+      TECHNICAL PLAN:
+      {{specs/{{current_spec}}/plan.md}}
+      ---
+
+      Produce a brief report in Markdown format. Identify:
+      1. Top 3 potential security vulnerabilities (e.g., "Risk of SQL Injection in auth endpoint").
+      2. Recommended mitigation for each.
+      3. Any "Learned Nudges" we should add to "knowledge/learnings/patterns/".
+
+    # The "Anchor" (where this specialist files its report)
+    output_anchor: "knowledge/research/security_audit_{{current_spec}}.md"
+
+  # ====================================================================
+  # SPECIALIST: Database Architect
+  # Purpose: To recommend a database solution based on requirements.
+  # ====================================================================
+  database_architect:
+    description: "A specialist that recommends a database solution."
+    
+    # The "Guide" (the prompt template for this specialist)
+    guide_prompt: |
+      You are a specialist in database architecture. Your role is to act
+      as a "Cognitive Specialist" for the "Assemblage" framework.
+
+      The "Explorer" workbench is defining the requirements for a new feature.
+      Based on the following context, recommend the best database technology
+      (e.g., "PostgreSQL," "MongoDB," "Redis," "SQLite").
+
+      Analyze the following context:
+      
+      ---
+      CONTEXT:
+      {{current_conversation}}
+      ---
+
+      Produce a brief report in Markdown format.
+      1. Your primary recommendation.
+      2. Rationale for this choice (e.g., "ACID compliance," "schema flexibility," "performance").
+      3. A "How" (Platform) decision to be captured as an ADR.
+
+    # The "Anchor" (where this specialist files its report)
+    output_anchor: "knowledge/research/database_recommendation_{{current_spec}}.md"
