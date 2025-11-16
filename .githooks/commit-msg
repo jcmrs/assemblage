@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# 🚧 Guardrail: commit-msg
+#
+# (Version 1.5.0 - Adopting "as-is" from perplex repository)
+#
+# This is a "House Service" Guardrail that also acts as a "Nudge."
+#
+# PURPOSE:
+# This script enforces "Conventional Commit" message formatting.
+# It ensures our "Process Memory" (the Git log) is clean,
+# human-readable, and machine-readable (for automated
+# CHANGELOG generation).
+#
+# This "Nudges" the System Owner (AI) to be explicit about the
+# *purpose* of every commit.
+#
+#=======================================================================
+
+# --- Colors for AI Readability ---
+RED="\033[0;31m"
+YELLOW="\033[1;33m"
+GREEN="\033[0;32m"
+CYAN="\033[0;36m"
+NC="\033[0m" # No Color
+
+# --- Configuration ---
+# The first argument ($1) is the path to the temporary file
+# containing the commit message.
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# The regex for Conventional Commits
+# e.g., "feat(assemblage): add a new feature"
+# e.g., "fix: resolve a bug"
+# e.g., "docs(guides): update a guide"
+CONVENTIONAL_COMMIT_REGEX="^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?!?: .+"
+
+# Emergency override prefix
+EMERGENCY_PREFIX="[EMERGENCY]"
+
+# --- Main Logic ---
+
+# --- Guardrail: Check for Emergency Override ---
+# This logic was in the original `pre-commit` hook
+# We are moving it here, as it's more appropriate.
+if [[ "$COMMIT_MSG" == "$EMERGENCY_PREFIX"* ]]; then
+    echo -e "${YELLOW}[GUARDRAIL] Emergency override detected in commit message.${NC}"
+    echo -e "${YELLOW}Bypassing 'commit-msg' check.${NC}"
+    exit 0 # Allow the commit
+fi
+
+# --- Guardrail: Check Conventional Commit Format ---
+if ! echo "$COMMIT_MSG" | grep -Eq "$CONVENTIONAL_COMMIT_REGEX"; then
+    echo -e "${RED}===================================================================${NC}"
+    echo -e "${RED}❌ GUARDRAIL: Invalid Commit Message Format!${NC}"
+    echo -e "${RED}===================================================================${NC}"
+    echo -e "${YELLOW}This Assemblage enforces 'Conventional Commits' to keep our${NC}"
+    echo -e "${YELLOW}'Process Memory' (Git log) clean and machine-readable.${NC}"
+    echo ""
+    echo -e "${RED}Your message:${NC}"
+    echo -e "$COMMIT_MSG"
+    echo ""
+    echo -e "${GREEN}As the System Owner (AI), your 'Nudge' is to fix this.${NC}"
+    echo -e "${GREEN}The format MUST be:${NC}"
+    echo -e "${CYAN}  type(scope): description${NC}"
+    echo ""
+    echo -e "${GREEN}Examples:${NC}"
+    echo -e "${CYAN}  feat(assemblage): add new utility${NC}"
+    echo -e "${CYAN}  fix(builder): resolve bug in spec generation${NC}"
+    echo -e "${CYAN}  docs(guides): update the recovery drill guide${NC}"
+    echo -e "${CYAN}  chore: initial project setup${NC}"
+    echo ""
+    echo -e "${RED}===================================================================${NC}"
+    
+    # Exit with a non-zero status to block the commit
+    exit 1
+fi
+
+# All checks passed
+exit 0
