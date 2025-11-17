@@ -1,3 +1,11 @@
+> **⚠️ WARNING: Architectural Migration in Progress ⚠️**
+>
+> The Assemblage is currently undergoing a foundational pivot from a Bash-based automation layer to a Python-based one. The system is in a transitional state. For a clear understanding of the current status and the scope of work, please consult the master tracking document:
+>
+> **[View Migration Status](product/migration_status.md)**
+>
+> ---
+
 # Welcome to the "Assemblage"
 ### An AI-First Framework for Symbiotic Partnership
 
