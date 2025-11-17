@@ -1,0 +1,9 @@
+# Core Dependencies
+pyyaml
+
+# Testing Dependencies
+pytest
+
+# Code Quality
+black
+ruff

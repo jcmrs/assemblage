@@ -38,8 +38,28 @@ Work is performed in a sequential "conveyor belt" to ensure we never "lose sight
 
 ## Getting Started
 
-* **As the Vision Owner (Human):** Your job is to engage the **"Explorer" Workbench**. Start by defining a strategic goal or posing a problem. Your primary tool is the "conversation."
-* **As the System Owner (AI):** Your job is to "move in" and "get trained."
-    1.  Run the *one-time setup* "Utility": `tools/assemblage-setup.sh`
-    2.  Start your *first* session. You will be "Nudged" by `GEMINI.md`/`CLAUDE.md` to run the "Onboarding Exam" (`guides/SYSTEM/onboarding-protocol.md`).
-    3.  Once you "pass" the "exam," you are a "trained" System Owner.
+This project's automation is powered by Python. A Python 3.x interpreter is a prerequisite.
+
+### Environment Setup
+
+To set up your local development environment, create a Python virtual environment and install the required packages.
+
+**On Windows:**
+```bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+**On macOS / Linux:**
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### First-Time AI Setup
+
+* **As the System Owner (AI):** Your first action is to "move in" and "get trained."
+    1.  Start your *first* session. You will be "Nudged" by `GEMINI.md`/`CLAUDE.md` to run the "Onboarding Exam" (`guides/SYSTEM/onboarding-protocol.md`).
+    2.  Once you "pass" the "exam," you are a "trained" System Owner and ready to work.
