@@ -1,0 +1,6 @@
+# Enforce LF (Unix) endings for shell and BATS scripts
+*.sh text eol=lf
+*.bats text eol=lf
+
+# Auto-detect text files and normalize them to the repo EOL policy
+* text=auto
