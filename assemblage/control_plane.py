@@ -9,7 +9,7 @@ the specific implementation of the tools.
 import argparse
 import sys
 
-from assemblage.tools import dashboard_generator, validate_assemblage, create_new_specialist
+from assemblage.tools import dashboard_generator, validate_assemblage, create_new_specialist, nudge
 
 def observe_command(args):
     """Handler for the 'observe' command."""
@@ -34,6 +34,14 @@ def create_specialist_command(args):
     """Handler for the 'create_specialist' command."""
     print("--- Control Plane: Launching 'create_specialist' ---")
     if create_new_specialist.main():
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
+def nudge_command(args):
+    """Handler for the 'nudge' command."""
+    print("--- Control Plane: Executing 'nudge' ---")
+    if nudge.deliver_nudge(args.nudge_id, args.current_workbench):
         sys.exit(0)
     else:
         sys.exit(1)
@@ -66,9 +74,11 @@ def main():
     )
     parser_create_specialist.set_defaults(func=create_specialist_command)
 
-    # Add future commands here (e.g., nudge)
-    # parser_nudge = subparsers.add_parser("nudge", help="...")
-    # parser_nudge.set_defaults(func=nudge_command)
+    # Define the 'nudge' command
+    parser_nudge = subparsers.add_parser("nudge", help="Deliver a behavioral nudge.")
+    parser_nudge.add_argument("nudge_id", help="The ID of the nudge to deliver.")
+    parser_nudge.add_argument("current_workbench", help="The active workbench.")
+    parser_nudge.set_defaults(func=nudge_command)
 
     args = parser.parse_args()
     args.func(args)

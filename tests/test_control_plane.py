@@ -79,17 +79,32 @@ def test_create_specialist_command_success(monkeypatch):
         control_plane.main()
 
     assert e.value.code == 0
-    mock_create.assert_called_once()
-def test_create_specialist_command_success(monkeypatch):
+
+def test_nudge_command_success(monkeypatch):
     """
-    Tests that the 'create_specialist' command exits with 0 on success.
+    Tests that the 'nudge' command exits with 0 on success.
     """
-    mock_create = MagicMock(return_value=True)
-    monkeypatch.setattr(control_plane.create_new_specialist, "main", mock_create)
-    monkeypatch.setattr(sys, "argv", ["control_plane.py", "create_specialist"])
+    mock_nudge = MagicMock(return_value=True)
+    monkeypatch.setattr(control_plane.nudge, "deliver_nudge", mock_nudge)
+    monkeypatch.setattr(sys, "argv", ["control_plane.py", "nudge", "some_nudge", "some_workbench"])
 
     with pytest.raises(SystemExit) as e:
         control_plane.main()
 
     assert e.value.code == 0
-    mock_create.assert_called_once()
+    mock_nudge.assert_called_once_with("some_nudge", "some_workbench")
+
+def test_nudge_command_failure(monkeypatch):
+    """
+    Tests that the 'nudge' command exits with 1 on failure.
+    """
+    mock_nudge = MagicMock(return_value=False)
+    monkeypatch.setattr(control_plane.nudge, "deliver_nudge", mock_nudge)
+    monkeypatch.setattr(sys, "argv", ["control_plane.py", "nudge", "blocked_nudge", "builder"])
+
+    with pytest.raises(SystemExit) as e:
+        control_plane.main()
+
+    assert e.value.code == 1
+    mock_nudge.assert_called_once_with("blocked_nudge", "builder")
+
