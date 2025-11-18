@@ -9,7 +9,7 @@ the specific implementation of the tools.
 import argparse
 import sys
 
-from assemblage.tools import dashboard_generator, validate_assemblage
+from assemblage.tools import dashboard_generator, validate_assemblage, create_new_specialist
 
 def observe_command(args):
     """Handler for the 'observe' command."""
@@ -26,6 +26,14 @@ def validate_command(args):
     """Handler for the 'validate' command."""
     print("--- Control Plane: Executing 'validate' ---")
     if validate_assemblage.validate():
+        sys.exit(0)
+    else:
+        sys.exit(1)
+
+def create_specialist_command(args):
+    """Handler for the 'create_specialist' command."""
+    print("--- Control Plane: Launching 'create_specialist' ---")
+    if create_new_specialist.main():
         sys.exit(0)
     else:
         sys.exit(1)
@@ -51,6 +59,12 @@ def main():
         "validate", help="Run a full integrity check of the Assemblage."
     )
     parser_validate.set_defaults(func=validate_command)
+
+    # Define the 'create_specialist' command
+    parser_create_specialist = subparsers.add_parser(
+        "create_specialist", help="Launch the interactive wizard to create a new Cognitive Specialist."
+    )
+    parser_create_specialist.set_defaults(func=create_specialist_command)
 
     # Add future commands here (e.g., nudge)
     # parser_nudge = subparsers.add_parser("nudge", help="...")

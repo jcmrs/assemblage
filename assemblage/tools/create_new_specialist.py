@@ -29,20 +29,20 @@ def main():
     # 1. Check if registry file exists
     if not REGISTRY_FILE.is_file():
         print(f"{RED}ERROR: Specialist Registry not found at '{REGISTRY_FILE}'!{NC}", file=sys.stderr)
-        sys.exit(1)
+        return False
 
     # 2. Get specialist ID and validate
     specialist_id = _prompt_user("Enter the unique ID for the new specialist (e.g., 'mcp_architect'):")
     if not specialist_id:
         print(f"{RED}ERROR: Specialist ID cannot be empty.{NC}", file=sys.stderr)
-        sys.exit(1)
+        return False
 
     with open(REGISTRY_FILE, "r") as f:
         existing_specialists = yaml.safe_load(f) or {}
     
     if specialist_id in existing_specialists.get("specialists", {}):
         print(f"{RED}ERROR: Specialist ID '{specialist_id}' already exists.{NC}", file=sys.stderr)
-        sys.exit(1)
+        return False
 
     # 3. Get other details
     description = _prompt_user(f"Enter the one-sentence description for '{specialist_id}':")
@@ -75,7 +75,4 @@ def main():
 
     print(f"\n{GREEN}✅ Successfully provisioned new Cognitive Specialist: '{specialist_id}'.{NC}")
     print(f"{BLUE}Nudge: This is an 'Assemblage' change. You MUST now follow the change protocol to commit it.{NC}")
-    sys.exit(0)
-
-if __name__ == "__main__":
-    main()
+    return True

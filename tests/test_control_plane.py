@@ -66,3 +66,30 @@ def test_validate_command_failure(monkeypatch):
 
     assert e.value.code == 1
     mock_validate.assert_called_once()
+
+def test_create_specialist_command_success(monkeypatch):
+    """
+    Tests that the 'create_specialist' command exits with 0 on success.
+    """
+    mock_create = MagicMock(return_value=True)
+    monkeypatch.setattr(control_plane.create_new_specialist, "main", mock_create)
+    monkeypatch.setattr(sys, "argv", ["control_plane.py", "create_specialist"])
+
+    with pytest.raises(SystemExit) as e:
+        control_plane.main()
+
+    assert e.value.code == 0
+    mock_create.assert_called_once()
+def test_create_specialist_command_success(monkeypatch):
+    """
+    Tests that the 'create_specialist' command exits with 0 on success.
+    """
+    mock_create = MagicMock(return_value=True)
+    monkeypatch.setattr(control_plane.create_new_specialist, "main", mock_create)
+    monkeypatch.setattr(sys, "argv", ["control_plane.py", "create_specialist"])
+
+    with pytest.raises(SystemExit) as e:
+        control_plane.main()
+
+    assert e.value.code == 0
+    mock_create.assert_called_once()
