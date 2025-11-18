@@ -7,7 +7,9 @@
 
 ## 1. Objective
 
-This document defines the scope and plan for migrating the Assemblage's automation and utility layer from Bash scripting to Python. This is a foundational, high-priority project to increase the stability, robustness, and maintainability of the "house," in accordance with the decision outlined in `ADR-005-python-pivot`.
+This document defines the scope and plan for migrating the Assemblage's automation and utility layer from Bash scripting to Python. This is a foundational, high-priority project to increase the stability and robustness of the "house."
+
+The primary architectural goal of this migration is to establish the foundation for a **decoupled Control Plane**. This pattern, where the AI Agent interacts with an abstract Control Plane instead of directly with tools, is critical for long-term scalability and maintainability. Our utilities will be refactored as functions or capabilities managed by this central Control Plane.
 
 ---
 

@@ -102,7 +102,7 @@ def generate_markdown_output(data):
         
     OUTPUT_MD.write_text(md_content, encoding="utf-8")
 
-def main():
+def generate():
     """
     Main function to orchestrate the dashboard generation.
     """
@@ -137,6 +137,3 @@ def main():
     except Exception as e:
         print(f"An unexpected error occurred: {e}", file=sys.stderr)
         sys.exit(1)
-
-if __name__ == "__main__":
-    main()

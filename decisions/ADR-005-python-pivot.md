@@ -33,12 +33,12 @@ This decision is based on the comprehensive research and planning documented in:
 
 ## Rationale
 
-This decision addresses the root cause of our platform instability, rather than attempting further brittle, symptomatic fixes.
+This decision addresses the root cause of our platform instability and provides a strategic opportunity to implement a more advanced agentic architecture.
 
-*   **Robustness & Stability:** Python provides a true cross-platform runtime, abstracting away OS-level details like line endings and path separators. This permanently solves the blocker and makes the "house" stable for the AI to work in.
-*   **AI-First:** Python is the lingua franca of AI and automation. Adopting it makes the Assemblage more powerful and reduces the cognitive load on the System Owner, as it provides a richer, more predictable toolset than Bash.
-*   **Maintainability & Extensibility:** A single, modern, high-level language is easier to maintain and extend than a collection of shell scripts. The Python ecosystem provides vast libraries for any future needs.
-*   **Constitutional Alignment:** This pivot reinforces all our imperatives by replacing a flawed, brittle system with one that is modular, automated, and designed for a predictable, AI-First environment.
+*   **Robustness & Stability:** Python provides a true cross-platform runtime, abstracting away OS-level details like line endings. This permanently solves the blocker.
+*   **Architectural Advancement:** Pivoting to Python enables us to implement a **decoupled Control Plane architecture**. By creating a central `control_plane` module to mediate tool use, we decouple the agent's reasoning from the tool's implementation. This is a massive leap forward in scalability, maintainability, and governance, as formally defined in `ADR-006`.
+*   **AI-First:** A decoupled architecture and a powerful language like Python significantly reduce the AI's cognitive load, allowing it to focus on strategic goals rather than tool-specific friction.
+*   **Maintainability & Extensibility:** A single, modern, high-level language is easier to maintain and extend. The Control Plane pattern makes adding or changing tools trivial without affecting the agent's core logic.
 
 ## Consequences
 
