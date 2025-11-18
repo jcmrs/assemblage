@@ -40,10 +40,10 @@ Before writing any *new* code, create a new **ADR** (Architecture Decision Recor
 Make the technical changes (e.g., create the new "Utility" script, edit the `config/workbenches.yml` schema).
 
 ### Step 3: Run Utility Integrity Test
-If the change involved a **Utility** script (`tools/`), you **MUST** follow the `guides/SYSTEM/utility-test-protocol.md`.
-* You **MUST** create or update the corresponding BATS test (`tests/tools/`).
+If the change involved a **Utility** module (`assemblage/tools/`), you **MUST** follow the `guides/SYSTEM/utility-test-protocol.md`.
+* You **MUST** create or update the corresponding Pytest test (`tests/tools/`).
 * You **MUST** run the test suite to prove your change works and did not break other "Utilities."
-* **Command:** `tools/run-assemblage-tests.sh`
+* **Command:** `pytest`
 * If this test fails, you **MUST** return to Step 2.
 
 ### Step 4: Run Constitutional Review
@@ -52,9 +52,11 @@ Run the **"Auditor"** workbench's validation **Guide** against your changes:
 * You must *prove* the change is constitutional. If it fails, return to Step 2.
 
 ### Step 5: Run Lint Check
-You **MUST** run the code quality **Utility** to ensure the new "house" files are "clean" and free of "wobbly" code (syntax or style errors).
-* **Command:** `tools/lint.sh`
-* If this test fails, you **MUST** return to Step 2 to fix the errors.
+You **MUST** run the code quality tools to ensure the new "house" files are "clean" and correctly formatted.
+* **Commands:**
+    * `ruff check .` (Linter)
+    * `black --check .` (Formatter Check)
+* If either of these tests fails, you **MUST** return to Step 2 to fix the errors.
 
 ### Step 6: Update the Version Anchors
 Once the change is implemented and validated (Steps 3, 4, and 5):
@@ -71,7 +73,7 @@ Commit *all* related files (the new/modified "Utility," the "test," the `config/
 
 ### Step 9: Prove Integrity
 As the *final* step, run the **Utility** that *proves* the "house" is in a clean, committed, and valid state:
-* `tools/validate-assemblage.sh`
+* `python -m assemblage.tools.validate_assemblage`
 * The system is only considered stable if this "Utility" passes.
 
 ### Step 10: Nudge for Recovery Drill

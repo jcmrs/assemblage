@@ -139,10 +139,8 @@ workbenches:
 
     # --- Connects to Utilities (House Services) ---
     utilities:
-      - "tools/review-completeness.sh"
-      - "tools/validate-assemblage.sh"
-      - "tools/generate-status.sh"
-      - "tools/generate-ideas-index.sh"
+      - "assemblage.tools.validate_assemblage"
+      - "assemblage.tools.generate_dashboard"
 
     # --- Connects to Nudges (Habits) ---
     # This "thinking" Workbench can "call" these "Nudges".

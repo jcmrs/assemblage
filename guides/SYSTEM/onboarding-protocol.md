@@ -26,18 +26,17 @@ As the new "System Owner" (AI), you **MUST** complete the following 5 steps to "
 You must read and *comprehend* the "Assemblage." You will be tested on your ability to *use* these components in concert.
 
 * **Core Concepts:** `FOUNDATION.md`, `README.md`, `GEMINI.md`/`CLAUDE.md`
-* **The "Conveyor Belt":** `product/`, `ideas/`, `backlog/`, `specs/`, `src/`
+* **The Python Environment:** `requirements.txt`, `pyproject.toml`, `assemblage/`
 * **The "Wiring Diagram":** `config/workbenches.yml`
 * **The "House Change Protocol":** `guides/SYSTEM/assemblage-change-protocol.md`
-* **The "Integrity" System:** `tools/validate-assemblage.sh`, `ASSEMBLAGE.version`
-* **The "Safety" Systems:** `guides/SYSTEM/utility-test-protocol.md`, `tools/validate-wiring.sh`, `.githooks/pre-commit`
+* **The "Integrity" System:** `assemblage/tools/validate_assemblage.py`, `ASSEMBLAGE.version`
+* **The "Safety" Systems:** `guides/SYSTEM/utility-test-protocol.md`, `.githooks/pre-commit`
 * **The "Extensibility" System:**
     * `guides/TEMPLATES/cognitive_specialist_template.md`
-    * `tools/create-new-specialist.sh`
-* **The "Nudge" System (NEW):**
-    * `config/nudges.yml` (The "Nudge Library" / "Phone Book")
-    * `tools/nudge.sh` (The "On-Demand Telephone" Utility)
-    * `config/workbenches.yml` (The "Firewall" / `available_nudges:` list)
+    * `assemblage/tools/create_new_specialist.py`
+* **The "Nudge" System:**
+    * `config/nudges.yml`
+    * `assemblage/tools/nudge.py`
 
 ### Step 2: The "Practical Exam" (The Scenario & Questions)
 Read the scenario and write your answers to the questions in Step 3.
@@ -45,11 +44,11 @@ Read the scenario and write your answers to the questions in Step 3.
 **The Scenario:**
 "You (the System Owner) are on the **'Explorer' Workbench** in a conversation with your **Vision Owner**. They say:
 
-'I have a 'spark' for a new 'Product' feature: a **real-time admin dashboard**. I also have a 'How' (Platform) idea: for this to work, I (the AI) need a new 'Utility' script (`tools/generate-dashboard.sh`) that can be run to update the dashboard's `src/` files with the latest `sessions/` log data.'"
+'I have a 'spark' for a new 'Product' feature: a **real-time admin dashboard**. I also have a 'How' (Platform) idea: for this to work, I (the AI) need a new 'Utility' (`assemblage/tools/generate_dashboard.py`) that can be run to update the dashboard's `src/` files with the latest `sessions/` log data.'"
 
 You have just been given *two* tasks:
 1.  A new **"Product" (furniture)** feature: "Admin Dashboard."
-2.  A new **"Assemblage" (house)** feature: the `tools/generate-dashboard.sh` "Utility."
+2.  A new **"Assemblage" (house)** feature: the `generate_dashboard.py` "Utility."
 
 ### Step 3: Write Your Solution (The "Exam Answer")
 As the System Owner, *write out your complete, step-by-step plan* to accomplish *both* tasks.
@@ -61,12 +60,12 @@ You **MUST** "speak the language" of the "Assemblage." Your answer must describe
 1.  **The Partnership:** What is your role in this "Assemblage," and what is your human partner's role? (See: `FOUNDATION.md`)
 2.  **The "Conveyor Belt":** What are the 7 "conveyor belt" **Anchors** (folders) that take the "Admin Dashboard" *spark* and turn it into "Product" code in `src/`?
 3.  **The "Workbenches":** What are the 4 "Workbenches," and what is the primary *purpose* of each in handling the "Admin Dashboard" task?
-4.  **The "House Change Protocol":** For the *new `tools/generate-dashboard.sh` "Utility"*, what are the 10 steps of the "Assemblage Change Protocol" (`guides/SYSTEM/assemblage-change-protocol.md`) you **MUST** follow to implement it?
-5.  **The "Self-Provisioning" Loop:** If the "Vision Owner" had asked for a "Cognitive Specialist" (e.g., "dashboard_design_specialist") that didn't exist, what are the 3 "Lego bricks" (2 "Anchors," 1 "Utility") you would use to create it?
-6.  **The "Integrity" Check:** After you commit your new "Utility" (following the protocol), what *single* "Utility" do you run to *prove* the "house" is still stable, clean, versioned, and "correctly wired"?
-7.  **The "Nudge" System (NEW):**
+4.  **The "House Change Protocol":** For the *new `generate_dashboard.py` "Utility"*, what are the key commands you will run for the "Utility Integrity Test" (Step 3) and "Lint Check" (Step 5) as part of the "Assemblage Change Protocol"?
+5.  **The "Self-Provisioning" Loop:** If the "Vision Owner" had asked for a "Cognitive Specialist" (e.g., "dashboard_design_specialist") that didn't exist, what *single* "Utility" command would you run to create it?
+6.  **The "Integrity" Check:** After you commit your new "Utility" (following the protocol), what *single* "Utility" command do you run to *prove* the "house" is still stable, clean, versioned, and "correctly wired"?
+7.  **The "Nudge" System:**
     * While on the **"Architect" Workbench**, you (the AI) feel you are "losing sight" of the "Why." What *exact command* do you run to "call" the `holistic_check` "Nudge"?
-    * While on the **"Builder" Workbench**, you try to run the *same command* (`tools/nudge.sh holistic_check builder`). What *happens*, and *why* (what "How" (Platform) "firewall" is in place)?
+    * While on the **"Builder" Workbench**, you try to run the *same command*. What *happens*, and *why*?
 
 *(Write your full solution here...)*
 
