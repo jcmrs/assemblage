@@ -9,7 +9,7 @@ the specific implementation of the tools.
 import argparse
 import sys
 
-from assemblage.tools import dashboard_generator
+from assemblage.tools import dashboard_generator, validate_assemblage
 
 def observe_command(args):
     """Handler for the 'observe' command."""
@@ -20,6 +20,14 @@ def observe_command(args):
         sys.exit(0)
     except Exception as e:
         print(f"ERROR: The 'observe' command failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+def validate_command(args):
+    """Handler for the 'validate' command."""
+    print("--- Control Plane: Executing 'validate' ---")
+    if validate_assemblage.validate():
+        sys.exit(0)
+    else:
         sys.exit(1)
 
 def main():
@@ -38,9 +46,15 @@ def main():
     )
     parser_observe.set_defaults(func=observe_command)
 
-    # Add future commands here (e.g., validate, nudge)
-    # parser_validate = subparsers.add_parser("validate", help="...")
-    # parser_validate.set_defaults(func=validate_command)
+    # Define the 'validate' command
+    parser_validate = subparsers.add_parser(
+        "validate", help="Run a full integrity check of the Assemblage."
+    )
+    parser_validate.set_defaults(func=validate_command)
+
+    # Add future commands here (e.g., nudge)
+    # parser_nudge = subparsers.add_parser("nudge", help="...")
+    # parser_nudge.set_defaults(func=nudge_command)
 
     args = parser.parse_args()
     args.func(args)

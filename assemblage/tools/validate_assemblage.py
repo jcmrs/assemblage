@@ -137,11 +137,11 @@ def _find_paths_in_yaml(data):
 
 # --- Main Orchestrator ---
 
-def main():
+def validate():
     """
-    Runs all validation checks and exits with an appropriate status code.
+    Runs all validation checks and returns True if all pass, otherwise False.
     """
-    print(f"{BLUE}--- Running MASTER Assemblage Integrity Validation (Python) ---")
+    print(f"{BLUE}--- Running MASTER Assemblage Integrity Validation (Python) ---{NC}")
     
     checks = [
         check_git_integrity,
@@ -154,10 +154,7 @@ def main():
     print("\n---")
     if all(results):
         _log_success("✅ MASTER Assemblage Integrity Protocol PASSED.")
-        sys.exit(0)
+        return True
     else:
         _log_failure("❌ MASTER Assemblage Integrity Protocol FAILED.")
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
+        return False
