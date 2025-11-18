@@ -9,7 +9,13 @@ the specific implementation of the tools.
 import argparse
 import sys
 
-from assemblage.tools import dashboard_generator, validate_assemblage, create_new_specialist, nudge
+from assemblage.tools import (
+    create_new_specialist,
+    dashboard_generator,
+    nudge,
+    validate_assemblage,
+)
+
 
 def observe_command(args):
     """Handler for the 'observe' command."""
@@ -22,6 +28,7 @@ def observe_command(args):
         print(f"ERROR: The 'observe' command failed: {e}", file=sys.stderr)
         sys.exit(1)
 
+
 def validate_command(args):
     """Handler for the 'validate' command."""
     print("--- Control Plane: Executing 'validate' ---")
@@ -29,6 +36,7 @@ def validate_command(args):
         sys.exit(0)
     else:
         sys.exit(1)
+
 
 def create_specialist_command(args):
     """Handler for the 'create_specialist' command."""
@@ -38,6 +46,7 @@ def create_specialist_command(args):
     else:
         sys.exit(1)
 
+
 def nudge_command(args):
     """Handler for the 'nudge' command."""
     print("--- Control Plane: Executing 'nudge' ---")
@@ -46,19 +55,23 @@ def nudge_command(args):
     else:
         sys.exit(1)
 
+
 def main():
     """
     Main entry point for the Assemblage Control Plane.
     Parses commands and dispatches them to the appropriate handlers.
     """
     parser = argparse.ArgumentParser(
-        description="Assemblage Control Plane: Abstract interface for agent-tool interaction."
+        description=(
+            "Assemblage Control Plane: Abstract interface for agent-tool interaction."
+        )
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Define the 'observe' command
     parser_observe = subparsers.add_parser(
-        "observe", help="Observe the state of the Assemblage and generate a status dashboard."
+        "observe",
+        help="Observe the state of the Assemblage and generate a status dashboard.",
     )
     parser_observe.set_defaults(func=observe_command)
 
@@ -70,7 +83,8 @@ def main():
 
     # Define the 'create_specialist' command
     parser_create_specialist = subparsers.add_parser(
-        "create_specialist", help="Launch the interactive wizard to create a new Cognitive Specialist."
+        "create_specialist",
+        help="Launch the interactive wizard to create a new Cognitive Specialist.",
     )
     parser_create_specialist.set_defaults(func=create_specialist_command)
 
@@ -82,6 +96,7 @@ def main():
 
     args = parser.parse_args()
     args.func(args)
+
 
 if __name__ == "__main__":
     main()
