@@ -11,3 +11,11 @@ repos:
     -   id: ruff
         args: [--fix]
     -   id: ruff-format
+-   repo: local
+    hooks:
+    -   id: reindex-codebase
+        name: Re-index Codebase
+        stages: [post-commit]
+        language: system
+        entry: python -m assemblage.control_plane index
+        verbose: true

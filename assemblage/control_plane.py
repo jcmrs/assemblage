@@ -16,6 +16,8 @@ from pathlib import Path
 
 import yaml
 
+from assemblage import code_search
+
 # --- Constants and ANSI Colors ---
 BLUE = "\033[0;34m"
 GREEN = "\033[0;32m"
@@ -410,6 +412,64 @@ def nudge_command(args):
         sys.exit(1)
 
 
+def index_command(args):
+    """Handler for the 'index' command."""
+    print("--- Control Plane: Executing 'index' ---")
+    try:
+        code_search.build_index()
+        sys.exit(0)
+    except Exception as e:
+        print(f"ERROR: Indexing failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def query_command(args):
+    """Handler for the 'query' command."""
+    print("--- Control Plane: Executing 'query' ---")
+    try:
+        results = code_search.search_index(args.query)
+        # Format and print results as per ADR-009
+        print(f'\n## Code Query Results for: "{args.query}"\n')
+        if not results:
+            print("No relevant code snippets found.")
+            sys.exit(0)
+
+        print(f"**Top {len(results)} Results:**\n")
+        for i, res in enumerate(results):
+            print("---")
+            print(f"**{i+1}. File:** `{res['path']}`")
+            print(f"**Lines:** {res['line']}")
+            print(f"**Confidence Score:** {res['score']:.2f}\n")
+            # In a future version, we would print the formatted code snippet
+            # print(f"```python\n{res['content']}\n```")
+        print("---\n")
+        sys.exit(0)
+    except Exception as e:
+        print(f"ERROR: Query failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+def status_command(args):
+    """Handler for the 'status' command."""
+    if args.index:
+        print("--- Control Plane: Checking 'index' status ---")
+        if code_search.INDEX_PATH.exists():
+            mod_time = datetime.fromtimestamp(
+                code_search.INDEX_PATH.stat().st_mtime
+            ).isoformat()
+            with open(code_search.METADATA_PATH, "r") as f:
+                item_count = len(json.load(f))
+            print("✅ Index found.")
+            print(f"   - Last built: {mod_time}")
+            print(f"   - Indexed items: {item_count}")
+        else:
+            print("❌ Index not found. Run 'control_plane index' to build it.")
+        sys.exit(0)
+    else:
+        print("Please specify a status to check (e.g., --index).")
+        sys.exit(1)
+
+
 # --- Main Entry Point ---
 
 
@@ -446,6 +506,26 @@ def main():
     parser_nudge.add_argument("nudge_id", help="The ID of the nudge to deliver.")
     parser_nudge.add_argument("current_workbench", help="The active workbench.")
     parser_nudge.set_defaults(func=nudge_command)
+
+    # Code Query System commands
+    parser_index = subparsers.add_parser(
+        "index", help="Build the code intelligence index."
+    )
+    parser_index.set_defaults(func=index_command)
+
+    parser_query = subparsers.add_parser(
+        "query", help="Perform a semantic query on the codebase."
+    )
+    parser_query.add_argument("query", help="The natural language query string.")
+    parser_query.set_defaults(func=query_command)
+
+    parser_status = subparsers.add_parser(
+        "status", help="Check the status of a system."
+    )
+    parser_status.add_argument(
+        "--index", action="store_true", help="Check the status of the code index."
+    )
+    parser_status.set_defaults(func=status_command)
 
     args = parser.parse_args()
     args.func(args)

@@ -7,3 +7,8 @@ pytest
 # Code Quality
 black
 ruff
+pre-commit
+
+# Code Intelligence
+sentence-transformers
+faiss-cpu
