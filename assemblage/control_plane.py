@@ -16,7 +16,26 @@ from pathlib import Path
 
 import yaml
 
-from assemblage import code_search
+from assemblage import code_search, stager
+
+
+def new_command(args):
+    """Handler for the 'new' command of the Context Staging System."""
+    print("--- Control Plane: Initializing Context Staging System ---")
+    try:
+        handler = stager.get_stage_handler(
+            args.type, args.title, from_adr=args.from_adr, from_item=args.from_item
+        )
+        briefing = handler.run()
+        print(briefing)
+        sys.exit(0)
+    except (ValueError, FileNotFoundError) as e:
+        print(f"{RED}ERROR: Could not create new document: {e}{NC}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}", file=sys.stderr)
+        sys.exit(1)
+
 
 # --- Constants and ANSI Colors ---
 BLUE = "\033[0;34m"
@@ -525,6 +544,25 @@ def main():
         "--index", action="store_true", help="Check the status of the code index."
     )
     parser_status.set_defaults(func=status_command)
+
+    # Context Staging System command
+    parser_new = subparsers.add_parser(
+        "new", help="Create a new process document from a template."
+    )
+    parser_new.add_argument(
+        "--type",
+        required=True,
+        choices=["item"],
+        help="The type of document to create.",
+    )
+    parser_new.add_argument(
+        "--title", required=True, help="The title of the new document."
+    )
+    parser_new.add_argument("--from-adr", help="The ID of the source ADR to link from.")
+    parser_new.add_argument(
+        "--from-item", help="The ID of the source backlog item to link from."
+    )
+    parser_new.set_defaults(func=new_command)
 
     args = parser.parse_args()
     args.func(args)
