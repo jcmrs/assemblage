@@ -44,19 +44,33 @@ Work is performed in a sequential "conveyor belt" to ensure we never "lose sight
 
 ---
 
+## Core Workflows
+
+### Committing Changes (Required)
+
+To ensure code quality and enable autonomous self-correction, all commits **must** be made through the `commit_wrapper.py` script. This wrapper automatically handles fixable linting and formatting errors.
+
+**Usage:**
+```bash
+python -m assemblage.commit_wrapper -m "Your detailed commit message"
+```
+
+---
+
 ## Getting Started
 
 This project's automation is powered by Python. A Python 3.x interpreter is a prerequisite.
 
 ### Environment Setup
 
-To set up your local development environment, create a Python virtual environment and install the required packages.
+To set up your local development environment, create a Python virtual environment, install the required packages, and install the Git hooks.
 
 **On Windows:**
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
+pre-commit install
 ```
 
 **On macOS / Linux:**
@@ -64,6 +78,7 @@ pip install -r requirements.txt
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+pre-commit install
 ```
 
 ### First-Time AI Setup
