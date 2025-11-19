@@ -106,4 +106,4 @@ def test_search_index(mock_codebase, monkeypatch):
 
     assert top_result["path"] == str(mock_codebase / "src/file2.py")
     assert top_result["line"] > 0
-    assert top_result["content"] == "Content not retrieved in this version."
+    assert "return a - b" in top_result["content"]

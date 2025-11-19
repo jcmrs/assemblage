@@ -440,8 +440,7 @@ def query_command(args):
             print(f"**{i+1}. File:** `{res['path']}`")
             print(f"**Lines:** {res['line']}")
             print(f"**Confidence Score:** {res['score']:.2f}\n")
-            # In a future version, we would print the formatted code snippet
-            # print(f"```python\n{res['content']}\n```")
+            print(f"```python\n{res['content']}\n```")
         print("---\n")
         sys.exit(0)
     except Exception as e:

@@ -86,7 +86,11 @@ def build_index():
             for chunk in chunks:
                 all_chunks_content.append(chunk["content"])
                 all_chunks_metadata.append(
-                    {"path": chunk["path"], "line": chunk["line"]}
+                    {
+                        "path": chunk["path"],
+                        "line": chunk["line"],
+                        "content": chunk["content"],
+                    }
                 )
         except Exception as e:
             print(f"WARNING: Could not process file {file_path}: {e}")
@@ -138,17 +142,13 @@ def search_index(query_text: str, top_k: int = 5):
     results = []
     for i, idx in enumerate(indices[0]):
         if idx < len(metadata):
-            # Retrieve the original content for the result
-            # This is inefficient, we should store content with metadata
-            # For now, we'll just return the metadata
-            # TODO: Store content in metadata file
             meta = metadata[idx]
             results.append(
                 {
                     "score": float(distances[0][i]),
                     "path": meta["path"],
                     "line": meta["line"],
-                    "content": "Content not retrieved in this version.",  # Placeholder
+                    "content": meta["content"],
                 }
             )
 
