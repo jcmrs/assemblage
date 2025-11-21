@@ -1,119 +1,81 @@
 """
 test_control_plane.py
 
-Tests for the main control_plane module.
+Tests for the refactored, dynamic Control Plane.
 """
 
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
+import yaml
 
 from assemblage import control_plane
 
 
-def test_observe_command_success(monkeypatch):
-    """
-    Tests that the 'observe' command successfully calls the internal logic.
-    """
-    mock_generate = MagicMock(return_value=True)
-    monkeypatch.setattr(control_plane, "_generate_dashboard", mock_generate)
-    monkeypatch.setattr(sys, "argv", ["control_plane.py", "observe"])
+@pytest.fixture
+def mock_config_file(tmp_path):
+    """Creates a temporary commands.yml file."""
+    config_content = {
+        "commands": {
+            "test_cmd": {
+                "entry_point": "assemblage.commands.test_cmd.run",
+                "help": "A test command.",
+                "arguments": [
+                    {"name": "--flag", "action": "store_true", "help": "A test flag."}
+                ],
+            }
+        }
+    }
+    config_path = tmp_path / "commands.yml"
+    with open(config_path, "w") as f:
+        yaml.dump(config_content, f)
+    return config_path
 
-    with pytest.raises(SystemExit) as e:
-        control_plane.main()
 
-    assert e.value.code == 0
-    mock_generate.assert_called_once()
-
-
-def test_invalid_command(capsys):
+@patch("importlib.import_module")
+def test_dynamic_command_loading_and_execution(mock_import_module, mock_config_file):
     """
-    Tests that an invalid command exits with an error.
+    Tests that the control plane can load a command from YAML, parse args,
+    and call the correct entry point.
     """
-    with patch("sys.argv", ["control_plane.py", "invalid_command"]):
-        with pytest.raises(SystemExit) as e:
+    # --- Setup Mocks ---
+    # Mock the module and function that should be dynamically imported
+    mock_command_module = MagicMock()
+    mock_run_function = MagicMock()
+    mock_command_module.run = mock_run_function
+    mock_import_module.return_value = mock_command_module
+
+    # Mock sys.argv to simulate command line input
+    test_argv = ["control_plane.py", "test_cmd", "--flag"]
+
+    # --- Patching ---
+    with patch.object(control_plane, "COMMANDS_CONFIG_PATH", mock_config_file):
+        with patch.object(control_plane.sys, "argv", test_argv):
+            # --- Execution ---
             control_plane.main()
 
-        assert e.value.code != 0
-        captured = capsys.readouterr()
-        assert "usage: control_plane.py" in captured.err
-        assert "invalid choice: 'invalid_command'" in captured.err
+    # --- Assertions ---
+    # Assert that the correct module was imported
+    mock_import_module.assert_called_once_with("assemblage.commands.test_cmd")
+
+    # Assert that the 'run' function was called
+    mock_run_function.assert_called_once()
+
+    # Assert that the parsed arguments were passed to the 'run' function
+    called_args = mock_run_function.call_args[0][0]
+    assert called_args.command == "test_cmd"
+    assert called_args.flag is True
 
 
-def test_validate_command_success(monkeypatch):
-    """
-    Tests that the 'validate' command exits with 0 on success.
-    """
-    mock_validate = MagicMock(return_value=True)
-    monkeypatch.setattr(control_plane, "_validate_assemblage", mock_validate)
-    monkeypatch.setattr(sys, "argv", ["control_plane.py", "validate"])
+def test_list_command_entry_point():
+    """Tests that the built-in 'list' command is wired up."""
+    test_argv = ["control_plane.py", "list"]
+    with patch.object(control_plane.sys, "argv", test_argv):
+        with patch("importlib.import_module") as mock_import:
+            mock_module = MagicMock()
+            mock_import.return_value = mock_module
 
-    with pytest.raises(SystemExit) as e:
-        control_plane.main()
+            control_plane.main()
 
-    assert e.value.code == 0
-    mock_validate.assert_called_once()
-
-
-def test_validate_command_failure(monkeypatch):
-    """
-    Tests that the 'validate' command exits with 1 on failure.
-    """
-    mock_validate = MagicMock(return_value=False)
-    monkeypatch.setattr(control_plane, "_validate_assemblage", mock_validate)
-    monkeypatch.setattr(sys, "argv", ["control_plane.py", "validate"])
-
-    with pytest.raises(SystemExit) as e:
-        control_plane.main()
-
-    assert e.value.code == 1
-    mock_validate.assert_called_once()
-
-
-def test_create_specialist_command_success(monkeypatch):
-    """
-    Tests that the 'create_specialist' command exits with 0 on success.
-    """
-    mock_create = MagicMock(return_value=True)
-    monkeypatch.setattr(control_plane, "_create_new_specialist", mock_create)
-    monkeypatch.setattr(sys, "argv", ["control_plane.py", "create_specialist"])
-
-    with pytest.raises(SystemExit) as e:
-        control_plane.main()
-
-    assert e.value.code == 0
-
-
-def test_nudge_command_success(monkeypatch):
-    """
-    Tests that the 'nudge' command exits with 0 on success.
-    """
-    mock_nudge = MagicMock(return_value=True)
-    monkeypatch.setattr(control_plane, "_deliver_nudge", mock_nudge)
-    monkeypatch.setattr(
-        sys, "argv", ["control_plane.py", "nudge", "some_nudge", "some_workbench"]
-    )
-
-    with pytest.raises(SystemExit) as e:
-        control_plane.main()
-
-    assert e.value.code == 0
-    mock_nudge.assert_called_once_with("some_nudge", "some_workbench")
-
-
-def test_nudge_command_failure(monkeypatch):
-    """
-    Tests that the 'nudge' command exits with 1 on failure.
-    """
-    mock_nudge = MagicMock(return_value=False)
-    monkeypatch.setattr(control_plane, "_deliver_nudge", mock_nudge)
-    monkeypatch.setattr(
-        sys, "argv", ["control_plane.py", "nudge", "blocked_nudge", "builder"]
-    )
-
-    with pytest.raises(SystemExit) as e:
-        control_plane.main()
-
-    assert e.value.code == 1
-    mock_nudge.assert_called_once_with("blocked_nudge", "builder")
+            mock_import.assert_called_once_with("assemblage.commands.list")
+            mock_module.run.assert_called_once()

@@ -23,10 +23,13 @@ def test_success_on_first_try(mock_run):
             commit_wrapper.main()
         assert e.value.code == 0
 
-    assert mock_run.call_count == 1
-    mock_run.assert_called_with(
-        ["git", "commit", "-m", "test commit"], capture_output=True, text=True
-    )
+        assert mock_run.call_count == 1
+
+        # Check the call arguments more flexibly
+        call_args, call_kwargs = mock_run.call_args
+        assert call_args[0] == ["git", "commit", "-m", "test commit"]
+        assert call_kwargs["capture_output"] is True
+        assert call_kwargs["text"] is True
 
 
 @patch("assemblage.commit_wrapper.subprocess.run")

@@ -1,0 +1,50 @@
+# The single source of truth for all Control Plane commands.
+commands:
+  observe:
+    entry_point: "assemblage.commands.observe.run"
+    help: "Observe the state of the Assemblage and generate a status dashboard."
+  validate:
+    entry_point: "assemblage.commands.validate.run"
+    help: "Run a full integrity check of the Assemblage."
+  create_specialist:
+    entry_point: "assemblage.commands.create_specialist.run"
+    help: "Launch the interactive wizard to create a new Cognitive Specialist."
+  nudge:
+    entry_point: "assemblage.commands.nudge.run"
+    help: "Deliver a behavioral nudge."
+    arguments:
+      - name: "nudge_id"
+        help: "The ID of the nudge to deliver."
+      - name: "current_workbench"
+        help: "The active workbench."
+  index:
+    entry_point: "assemblage.commands.index.run"
+    help: "Build the code intelligence index."
+  query:
+    entry_point: "assemblage.commands.query.run"
+    help: "Perform a semantic query on the codebase."
+    arguments:
+      - name: "query"
+        help: "The natural language query string."
+  status:
+    entry_point: "assemblage.commands.status.run"
+    help: "Check the status of a system."
+    arguments:
+      - name: "--index"
+        action: "store_true"
+        help: "Check the status of the code index."
+  new:
+    entry_point: "assemblage.commands.new.run"
+    help: "Create a new process document from a template."
+    arguments:
+      - name: "--type"
+        required: true
+        choices: ["item"]
+        help: "The type of document to create."
+      - name: "--title"
+        required: true
+        help: "The title of the new document."
+      - name: "--from-adr"
+        help: "The ID of the source ADR to link from."
+      - name: "--from-item"
+        help: "The ID of the source backlog item to link from."
