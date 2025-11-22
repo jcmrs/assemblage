@@ -1,125 +1,192 @@
 """
 code_search.py
 
-Core logic for indexing the codebase and performing semantic searches.
+Core logic for incrementally indexing the codebase and performing semantic searches.
 """
 
+import hashlib
 import json
 import re
 import subprocess
 from pathlib import Path
 
 import faiss
+import numpy as np
 from sentence_transformers import SentenceTransformer
 
 # --- Constants ---
 INDEX_DIR = Path(".assemblage_cache")
 INDEX_PATH = INDEX_DIR / "code_index.faiss"
 METADATA_PATH = INDEX_DIR / "code_index_meta.json"
+MANIFEST_PATH = INDEX_DIR / "index_manifest.json"
 MODEL_NAME = "all-MiniLM-L6-v2"
 
 
+def _get_content_hash(content: str) -> str:
+    """Returns the SHA256 hash of a string."""
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def _load_state():
+    """Loads the index, metadata, and manifest from disk."""
+    print("INFO: Loading existing index state...")
+    if (
+        not INDEX_PATH.exists()
+        or not METADATA_PATH.exists()
+        or not MANIFEST_PATH.exists()
+    ):
+        print("INFO: No existing index found. Initializing new index.")
+        # Get model dimension
+        model = SentenceTransformer(MODEL_NAME)
+        dimension = model.get_sentence_embedding_dimension()
+        # Create a new FAISS index that supports ID mapping
+        index = faiss.IndexIDMap(faiss.IndexFlatL2(dimension))
+        metadata = {}
+        manifest = {"files": {}, "next_faiss_id": 0}
+        return index, metadata, manifest
+
+    index = faiss.read_index(str(INDEX_PATH))
+    with open(METADATA_PATH, "r", encoding="utf-8") as f:
+        metadata = json.load(f)
+    with open(MANIFEST_PATH, "r", encoding="utf-8") as f:
+        manifest = json.load(f)
+
+    return index, metadata, manifest
+
+
+def _save_state(index, metadata, manifest):
+    """Saves the index, metadata, and manifest to disk."""
+    print("INFO: Saving new index state...")
+    INDEX_DIR.mkdir(exist_ok=True)
+    faiss.write_index(index, str(INDEX_PATH))
+    with open(METADATA_PATH, "w", encoding="utf-8") as f:
+        json.dump(metadata, f)
+    with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2)
+
+
 def _get_all_code_files():
-    """
-    Gets all .py files in the repo, respecting .gitignore.
-    """
-    print("INFO: Finding all Python files in the repository...")
-    # Use git to list all tracked python files, which respects .gitignore
+    """Gets all .py files in the repo, respecting .gitignore."""
     cmd = ["git", "ls-files", "*.py"]
     result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-    files = [Path(p) for p in result.stdout.strip().split("\n") if p]
-    print(f"INFO: Found {len(files)} Python files to index.")
-    return files
+    return {Path(p) for p in result.stdout.strip().split("\n") if p}
 
 
 def _split_code_into_chunks(file_path: Path, content: str):
-    """
-    Splits code into chunks based on class/function definitions.
-    """
+    """Splits code into chunks based on class/function definitions."""
     chunks = []
-    # Split by class/def, but keep the delimiter
     split_points = re.split(r"(^\s*(?:def|class)\s)", content, flags=re.MULTILINE)
-
-    # The first element is the content before the first class/def (imports etc.)
-    # We can choose to index this or not. For now, we'll skip it.
-
-    # Re-combine the delimiter with the following code block
     for i in range(1, len(split_points), 2):
         chunk_header = split_points[i]
         chunk_body = split_points[i + 1]
         full_chunk = chunk_header + chunk_body
-
-        # Find line number of the chunk
-        # This is an approximation but good enough for this purpose
         lines = content.splitlines()
-        line_num = -1
-        for idx, line in enumerate(lines):
-            if line.strip().startswith(chunk_header.strip()):
-                line_num = idx + 1
-                break
-
+        line_num = next(
+            (
+                idx + 1
+                for idx, line in enumerate(lines)
+                if line.strip().startswith(chunk_header.strip())
+            ),
+            -1,
+        )
         chunks.append({"path": str(file_path), "line": line_num, "content": full_chunk})
-
     return chunks
 
 
 def build_index():
-    """
-    Builds the FAISS index and metadata for the entire codebase.
-    """
-    print("INFO: Building code intelligence index...")
-    INDEX_DIR.mkdir(exist_ok=True)
-
-    print(f"INFO: Initializing sentence transformer model '{MODEL_NAME}'...")
+    """Builds or updates the FAISS index incrementally."""
+    print("INFO: Starting incremental index build...")
+    index, metadata, manifest = _load_state()
     model = SentenceTransformer(MODEL_NAME)
 
-    all_files = _get_all_code_files()
+    current_files = _get_all_code_files()
+    manifest_files = set(Path(p) for p in manifest["files"].keys())
 
-    all_chunks_content = []
-    all_chunks_metadata = []
+    # --- Identify Changes ---
+    files_to_add = []
+    ids_to_remove = []
 
-    print("INFO: Parsing files and splitting into code chunks...")
-    for file_path in all_files:
+    deleted_files = manifest_files - current_files
+    for file_path in deleted_files:
+        file_str = str(file_path)
+        if file_str in manifest["files"]:
+            ids_to_remove.extend(manifest["files"][file_str]["faiss_ids"])
+            del manifest["files"][file_str]
+            print(f"INFO: File deleted: {file_str}")
+
+    files_to_check = current_files - deleted_files
+    for file_path in files_to_check:
+        file_str = str(file_path)
         try:
             content = file_path.read_text(encoding="utf-8")
-            chunks = _split_code_into_chunks(file_path, content)
-            for chunk in chunks:
-                all_chunks_content.append(chunk["content"])
-                all_chunks_metadata.append(
-                    {
-                        "path": chunk["path"],
-                        "line": chunk["line"],
-                        "content": chunk["content"],
-                    }
-                )
+            content_hash = _get_content_hash(content)
+            if (
+                file_str not in manifest["files"]
+                or manifest["files"][file_str]["hash"] != content_hash
+            ):
+                files_to_add.append((file_path, content, content_hash))
+                if file_str in manifest["files"]:
+                    ids_to_remove.extend(manifest["files"][file_str]["faiss_ids"])
+                    print(f"INFO: File modified: {file_str}")
+                else:
+                    print(f"INFO: New file found: {file_str}")
         except Exception as e:
             print(f"WARNING: Could not process file {file_path}: {e}")
 
-    if not all_chunks_content:
-        print("WARNING: No code chunks found to index.")
+    # --- Process Changes ---
+    if not files_to_add and not ids_to_remove:
+        print("INFO: Index is up to date.")
         return
 
-    print(f"INFO: Generating embeddings for {len(all_chunks_content)} code chunks...")
-    embeddings = model.encode(all_chunks_content, show_progress_bar=True)
+    if ids_to_remove:
+        print(f"INFO: Removing {len(ids_to_remove)} old vectors from index...")
+        index.remove_ids(np.array(ids_to_remove, dtype=np.int64))
+        # Also remove from metadata
+        ids_to_remove_set = set(ids_to_remove)
+        for key in list(metadata.keys()):
+            if int(key) in ids_to_remove_set:
+                del metadata[key]
 
-    dimension = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dimension)
-    index.add(embeddings)
+    if files_to_add:
+        next_id = manifest["next_faiss_id"]
 
-    print(f"INFO: Saving FAISS index to {INDEX_PATH}...")
-    faiss.write_index(index, str(INDEX_PATH))
+        for file_path, content, content_hash in files_to_add:
+            chunks = _split_code_into_chunks(file_path, content)
+            if not chunks:
+                continue
 
-    print(f"INFO: Saving metadata to {METADATA_PATH}...")
-    with open(METADATA_PATH, "w", encoding="utf-8") as f:
-        json.dump(all_chunks_metadata, f)
+            print(
+                "INFO: Generating embeddings for "
+                f"{len(chunks)} chunks in {file_path}..."
+            )
+            embeddings = np.array(model.encode([c["content"] for c in chunks]))
 
+            if embeddings.ndim == 1:  # Handle case of single chunk
+                embeddings = np.atleast_2d(embeddings)
+
+            faiss_ids = list(range(next_id, next_id + len(chunks)))
+
+            print(f"INFO: Adding {len(chunks)} new vectors to index...")
+            index.add_with_ids(embeddings, np.array(faiss_ids, dtype=np.int64))
+
+            for i, chunk in enumerate(chunks):
+                chunk_id = faiss_ids[i]
+                metadata[str(chunk_id)] = chunk
+
+            manifest["files"][str(file_path)] = {
+                "hash": content_hash,
+                "faiss_ids": faiss_ids,
+            }
+            next_id += len(chunks)
+
+        manifest["next_faiss_id"] = next_id
+
+    _save_state(index, metadata, manifest)
     print("INFO: Index build complete.")
 
 
 def search_index(query_text: str, top_k: int = 5):
-    """
-    Searches the index for a given query.
-    """
+    """Searches the index for a given query."""
     if not INDEX_PATH.exists() or not METADATA_PATH.exists():
         raise FileNotFoundError(
             "Index not found. Please run 'control_plane index' first."
@@ -130,19 +197,16 @@ def search_index(query_text: str, top_k: int = 5):
     with open(METADATA_PATH, "r", encoding="utf-8") as f:
         metadata = json.load(f)
 
-    print(f"INFO: Initializing sentence transformer model '{MODEL_NAME}'...")
     model = SentenceTransformer(MODEL_NAME)
-
-    print(f"INFO: Encoding query: '{query_text}'")
     query_vector = model.encode([query_text])
-
-    print(f"INFO: Performing search for top {top_k} results...")
     distances, indices = index.search(query_vector, top_k)
 
     results = []
     for i, idx in enumerate(indices[0]):
-        if idx < len(metadata):
-            meta = metadata[idx]
+        # The indices returned by search are the FAISS IDs
+        meta_key = str(idx)
+        if meta_key in metadata:
+            meta = metadata[meta_key]
             results.append(
                 {
                     "score": float(distances[0][i]),
@@ -151,5 +215,4 @@ def search_index(query_text: str, top_k: int = 5):
                     "content": meta["content"],
                 }
             )
-
     return results
