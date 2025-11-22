@@ -52,3 +52,10 @@ commands:
         help: "The ID of the source ADR to link from."
       - name: "--from-item"
         help: "The ID of the source backlog item to link from."
+  feedback:
+    entry_point: "assemblage.commands.feedback.run"
+    help: "Provide structured, two-phase feedback on a specific commit."
+    arguments:
+      - name: "--commit"
+        required: true
+        help: "The git commit hash to review."
