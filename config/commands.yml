@@ -6,6 +6,10 @@ commands:
   validate:
     entry_point: "assemblage.commands.validate.run"
     help: "Run a full integrity check of the Assemblage."
+    arguments:
+      - name: "--coverage"
+        action: "store_true"
+        help: "Run tests with coverage reporting."
   create_specialist:
     entry_point: "assemblage.commands.create_specialist.run"
     help: "Launch the interactive wizard to create a new Cognitive Specialist."

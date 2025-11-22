@@ -124,15 +124,46 @@ def _check_wiring_integrity():
     return all_paths_valid
 
 
+def _run_coverage_report():
+    """Runs pytest with coverage and streams the output."""
+    print("INFO: Generating test coverage report...")
+    cmd = ["pytest", "--cov=assemblage", "--cov-report=term-missing"]
+    # Use Popen to stream output in real-time
+    process = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+    )
+
+    while True:
+        output = process.stdout.readline()
+        if output == "" and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+
+    return process.poll() == 0
+
+
 def run(args):
-    """Runs all validation checks and returns True if all pass, otherwise False."""
-    print(f"{BLUE}--- Running MASTER Assemblage Integrity Validation ---{NC}")
-    checks = [_check_git_integrity, _check_version_alignment, _check_wiring_integrity]
-    results = [check() for check in checks]
-    print("\n---")
-    if all(results):
-        _log_success("✅ MASTER Assemblage Integrity Protocol PASSED.")
-        sys.exit(0)
+    """Runs all validation checks or a coverage report."""
+    if hasattr(args, "coverage") and args.coverage:
+        print(f"{BLUE}--- Running Test Suite with Coverage ---{NC}")
+        if _run_coverage_report():
+            return
+        else:
+            sys.exit(1)
     else:
-        _log_failure("❌ MASTER Assemblage Integrity Protocol FAILED.")
-        sys.exit(1)
+        # Existing validation logic follows
+        print(f"{BLUE}--- Running MASTER Assemblage Integrity Validation ---{NC}")
+        checks = [
+            _check_git_integrity,
+            _check_version_alignment,
+            _check_wiring_integrity,
+        ]
+        results = [check() for check in checks]
+        print("\n---")
+        if all(results):
+            _log_success("✅ MASTER Assemblage Integrity Protocol PASSED.")
+            return
+        else:
+            _log_failure("❌ MASTER Assemblage Integrity Protocol FAILED.")
+            sys.exit(1)

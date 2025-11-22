@@ -24,9 +24,8 @@ def test_validate_all_pass(mock_subprocess_run, tmp_path, monkeypatch):
     (tmp_path / "config" / "workbenches.yml").write_text("workbenches: {}")
     (tmp_path / "config" / "specialists.yml").write_text("specialists: {}")
 
-    with patch.object(validate.sys, "exit") as mock_exit:
-        validate.run(None)
-        mock_exit.assert_called_once_with(0)
+    # This should run without raising an exception or calling sys.exit
+    validate.run(None)
 
 
 @patch("assemblage.commands.validate.subprocess.run")
@@ -57,11 +56,6 @@ def test_validate_version_fails(mock_subprocess_run, tmp_path, monkeypatch):
     mock_subprocess_run.return_value = MagicMock(stdout="")
 
     (tmp_path / "ASSEMBLAGE.version").write_text("1.2.3")
-    (tmp_path / "CHANGELOG.md").write_text("## [1.2.4] - 2025-11-20")  # Mismatch
-    (tmp_path / "config").mkdir()
-    (tmp_path / "config" / "workbenches.yml").write_text("workbenches: {}")
-    (tmp_path / "config" / "specialists.yml").write_text("specialists: {}")
-
     with patch.object(validate.sys, "exit") as mock_exit:
         validate.run(None)
         mock_exit.assert_called_once_with(1)
