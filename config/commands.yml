@@ -62,3 +62,6 @@ commands:
   analyze_feedback:
     entry_point: "assemblage.commands.analyze_feedback.run"
     help: "Analyzes all feedback files and proposes new nudges."
+  install_dependencies:
+    entry_point: "assemblage.commands.install_dependencies.run"
+    help: "Installs/updates dependencies from requirements.txt using pip."
