@@ -10,6 +10,8 @@ import re
 from datetime import date
 from pathlib import Path
 
+from assemblage import parsers
+
 
 class BaseStage:
     """Abstract base class for a stage in the document workflow."""
@@ -110,13 +112,33 @@ class AdrToItemStage(BaseStage):
     """Stage handler for creating a Backlog Item from an ADR."""
 
     def _get_template_path(self):
-        return Path("guides/TEMPLATES/item_template.md")
+        # We now use the main template, not a separate one
+        return Path("backlog/items/TEMPLATE.md")
 
     def _get_target_dir(self):
         return Path("backlog/items")
 
+    def _render(self, template, context):
+        """Overrides base render to handle multiline content better."""
+        content = template
+        # Basic placeholders
+        content = content.replace("{{NUMBER}}", context.get("ITEM_ID_PADDED", "XXX"))
+        content = content.replace("{{DATE}}", context.get("DATE", ""))
+        content = content.replace("[Short Title]", self.title)
+        content = content.replace("ADR-{{ADR_NUMBER}}", f"ADR-{self.from_id:03d}")
+        content = content.replace("{{SPEC_NAME}}", context.get("SLUG", "XXX-spec-name"))
+
+        # Injected content
+        content = content.replace("{{WHY_SUMMARY}}", context.get("WHY_SUMMARY", ""))
+        content = content.replace(
+            "{{SUGGESTED_ACCEPTANCE_CRITERIA}}",
+            context.get("SUGGESTED_ACCEPTANCE_CRITERIA", ""),
+        )
+
+        return content
+
     def assemble_context(self):
-        """Gathers context from the source ADR."""
+        """Gathers and synthesizes context from the source ADR."""
         if not self.from_id:
             raise ValueError(
                 "Creating an 'item' requires a source ADR ID via --from-adr."
@@ -131,15 +153,35 @@ class AdrToItemStage(BaseStage):
         adr_path = adr_files[0]
         adr_content = adr_path.read_text(encoding="utf-8")
 
-        # Extract title
-        match = re.search(r"#\s*ADR-\d+:\s*(.*)", adr_content)
-        adr_title = match.group(1).strip() if match else "N/A"
+        # Use the new parser
+        parsed_adr = parsers.parse_adr(adr_content)
+
+        # Create the "Why" summary
+        why_summary = (
+            f"This item implements the decision from **{parsed_adr['title']}**.\n\n"
+            f"**Context:** {parsed_adr['context'][:250]}...\n\n"
+            f"**Decision:** {parsed_adr['decision'][:350]}..."
+        )
+
+        # Suggest acceptance criteria from decision and consequences
+        suggestions = []
+        decision_lines = parsed_adr["decision"].split("\n")
+        consequences_lines = parsed_adr["consequences"].split("\n")
+
+        for line in decision_lines + consequences_lines:
+            line = line.strip()
+            if line.startswith(("- ", "* ", "1. ", "2. ", "3. ")):
+                # Clean up the line
+                cleaned_line = re.sub(r"^[*-]\s*|^(\d+\.)\s*", "", line)
+                suggestions.append(f"- [ ] {cleaned_line}")
+
+        suggested_criteria = "\n".join(suggestions) if suggestions else "- [ ] TBD"
 
         return {
             "TITLE": self.title,
             "DATE": date.today().isoformat(),
-            "ADR_LINK": f"[`ADR-{self.from_id:03d}`]({adr_path})",
-            "ADR_TITLE": adr_title,
+            "WHY_SUMMARY": why_summary,
+            "SUGGESTED_ACCEPTANCE_CRITERIA": suggested_criteria,
         }
 
 
