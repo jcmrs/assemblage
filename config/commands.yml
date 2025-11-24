@@ -90,3 +90,34 @@ commands:
         help: "The ID of the nudge to update."
       - name: "text"
         help: "The new text content for the nudge."
+
+  add-command:
+    entry_point: "assemblage.commands.manage_commands.add"
+    help: "Adds a new command to config/commands.yml."
+    args:
+      - name: "name"
+        help: "The name of the new command."
+      - name: "entry_point"
+        help: "The entry point in 'module.path:function' format."
+      - name: "help"
+        help: "The help text for the command."
+
+  remove-command:
+    entry_point: "assemblage.commands.manage_commands.remove"
+    help: "Removes a command from config/commands.yml."
+    args:
+      - name: "name"
+        help: "The name of the command to remove."
+
+  update-command:
+    entry_point: "assemblage.commands.manage_commands.update"
+    help: "Updates an existing command in config/commands.yml."
+    args:
+      - name: "name"
+        help: "The name of the command to update."
+      - name: "--entry-point"
+        required: false
+        help: "The new entry point."
+      - name: "--help"
+        required: false
+        help: "The new help text."
