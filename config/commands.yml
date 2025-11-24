@@ -65,3 +65,28 @@ commands:
   install_dependencies:
     entry_point: "assemblage.commands.install_dependencies.run"
     help: "Installs/updates dependencies from requirements.txt using pip."
+
+  add_nudge:
+    entry_point: "assemblage.commands.manage_nudges.add"
+    help: "Adds a new nudge to config/nudges.yml."
+    args:
+      - name: "id"
+        help: "The unique ID for the new nudge (e.g., nudge_commit_message_check)."
+      - name: "text"
+        help: "The text content of the nudge."
+
+  remove_nudge:
+    entry_point: "assemblage.commands.manage_nudges.remove"
+    help: "Removes a nudge from config/nudges.yml."
+    args:
+      - name: "id"
+        help: "The ID of the nudge to remove."
+
+  update_nudge:
+    entry_point: "assemblage.commands.manage_nudges.update"
+    help: "Updates an existing nudge in config/nudges.yml."
+    args:
+      - name: "id"
+        help: "The ID of the nudge to update."
+      - name: "text"
+        help: "The new text content for the nudge."
