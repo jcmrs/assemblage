@@ -4,9 +4,9 @@ code_search.py
 Core logic for incrementally indexing the codebase and performing semantic searches.
 """
 
+import ast
 import hashlib
 import json
-import re
 import subprocess
 from pathlib import Path
 
@@ -73,23 +73,34 @@ def _get_all_code_files():
 
 
 def _split_code_into_chunks(file_path: Path, content: str):
-    """Splits code into chunks based on class/function definitions."""
+    """
+    Splits code into chunks using an Abstract Syntax Tree (AST).
+    Each top-level function and class is considered a chunk.
+    """
     chunks = []
-    split_points = re.split(r"(^\s*(?:def|class)\s)", content, flags=re.MULTILINE)
-    for i in range(1, len(split_points), 2):
-        chunk_header = split_points[i]
-        chunk_body = split_points[i + 1]
-        full_chunk = chunk_header + chunk_body
-        lines = content.splitlines()
-        line_num = next(
-            (
-                idx + 1
-                for idx, line in enumerate(lines)
-                if line.strip().startswith(chunk_header.strip())
-            ),
-            -1,
-        )
-        chunks.append({"path": str(file_path), "line": line_num, "content": full_chunk})
+    try:
+        tree = ast.parse(content, filename=str(file_path))
+    except SyntaxError as e:
+        print(f"WARNING: Skipping {file_path} due to syntax error: {e}")
+        return []
+
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+            # ast.get_source_segment might not exist in all versions or might fail
+            try:
+                source_segment = ast.get_source_segment(content, node)
+            except (TypeError, ValueError):
+                # Fallback for older versions or edge cases
+                source_segment = None
+
+            if source_segment:
+                chunks.append(
+                    {
+                        "path": str(file_path),
+                        "line": node.lineno,
+                        "content": source_segment,
+                    }
+                )
     return chunks
 
 
