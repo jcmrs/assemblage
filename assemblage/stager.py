@@ -185,6 +185,75 @@ class AdrToItemStage(BaseStage):
         }
 
 
+class ItemToSpecStage(BaseStage):
+    """Stage handler for creating a Spec from a Backlog Item."""
+
+    def _get_template_path(self):
+        return Path("specs/TEMPLATE.md")
+
+    def _get_target_dir(self):
+        # Create a subdirectory for the spec based on the item slug
+        slug = self.title.lower().replace(" ", "-")
+        return Path("specs") / slug
+
+    def _render(self, template, context):
+        """Renders the spec template."""
+        content = template
+        content = content.replace(
+            "{{ITEM_TITLE}}", context.get("ITEM_TITLE", "[Item Title]")
+        )
+        content = content.replace(
+            "{{ITEM_ID_PADDED}}", context.get("ITEM_ID_PADDED", "XXX")
+        )
+        content = content.replace("{{ADR_NUMBER}}", context.get("ADR_NUMBER", "XXX"))
+        content = content.replace("{{WHY_SUMMARY}}", context.get("WHY_SUMMARY", ""))
+        content = content.replace(
+            "{{ACCEPTANCE_CRITERIA}}", context.get("ACCEPTANCE_CRITERIA", "")
+        )
+        return content
+
+    def _provision_file(self, content):
+        """Saves the rendered content to a new spec.md file."""
+        target_dir = self._get_target_dir()
+        target_dir.mkdir(exist_ok=True)
+
+        new_path = target_dir / "spec.md"
+
+        print(f"INFO: Provisioning new file at '{new_path}'...")
+        new_path.write_text(content, encoding="utf-8")
+        return new_path
+
+    def assemble_context(self):
+        """Gathers context from the source Backlog Item."""
+        if not self.from_id:
+            raise ValueError(
+                "Creating a 'spec' requires a source item ID via --from-item."
+            )
+
+        # Find the item file
+        item_dir = Path("backlog/items")
+        item_files = list(item_dir.glob(f"{self.from_id:03d}-*.md"))
+        if not item_files:
+            raise FileNotFoundError(
+                f"Could not find item with ID '{self.from_id:03d}'."
+            )
+
+        item_content = item_files[0].read_text(encoding="utf-8")
+        parsed_item = parsers.parse_item(item_content)
+
+        # Extract ADR number from the link
+        adr_num_match = re.search(r"ADR-(\d+)", parsed_item["adr_link"])
+        adr_number = adr_num_match.group(1) if adr_num_match else "XXX"
+
+        return {
+            "ITEM_TITLE": parsed_item["title"],
+            "ITEM_ID_PADDED": f"{self.from_id:03d}",
+            "ADR_NUMBER": adr_number,
+            "WHY_SUMMARY": parsed_item["description"],
+            "ACCEPTANCE_CRITERIA": parsed_item["acceptance_criteria"],
+        }
+
+
 def get_stage_handler(doc_type, title, from_adr=None, from_item=None):
     """Factory function to get the correct stage handler."""
     if doc_type == "item":
@@ -192,10 +261,12 @@ def get_stage_handler(doc_type, title, from_adr=None, from_item=None):
             return AdrToItemStage(title, from_id=int(from_adr))
         else:
             raise ValueError("Creating an 'item' requires a source ADR via --from-adr.")
-    # Add other types like 'spec' here in the future
-    # elif doc_type == "spec":
-    #     if from_item:
-    #         return ItemToSpecStage(title, from_id=int(from_item))
-    #     ...
+    elif doc_type == "spec":
+        if from_item:
+            return ItemToSpecStage(title, from_id=int(from_item))
+        else:
+            raise ValueError(
+                "Creating a 'spec' requires a source item via --from-item."
+            )
     else:
         raise ValueError(f"Unknown document type '{doc_type}'.")

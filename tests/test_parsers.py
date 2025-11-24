@@ -4,7 +4,7 @@ tests.test_parsers
 Tests for the reusable parsing functions.
 """
 
-from assemblage.parsers import parse_adr
+from assemblage.parsers import parse_adr, parse_item
 
 MOCK_ADR_CONTENT = """
 # ADR-001: Some Great Decision
@@ -66,3 +66,38 @@ def test_parse_adr_missing_sections():
     assert "Some context." in parsed["context"]
     assert "Another decision." in parsed["decision"]
     assert parsed["consequences"] == ""
+
+
+MOCK_ITEM_CONTENT = """
+# ITEM-024: [Implement Autonomous Configuration Management]
+
+## 1. Description
+
+This item implements the decision from **ADR-017: Autonomous Configuration Management**.
+
+**Context:** The Assemblage's core operational parameters...
+
+**Decision:** We will implement **Autonomous Configuration Management**...
+
+## 2. "Why" (The Source Material)
+
+* **Decision (The "Why"):**
+    * `decisions/ADR-017-autonomous-configuration-management.md`
+
+## 3. "What" (Acceptance Criteria)
+
+- [ ] New `control_plane add_command` is implemented.
+- [ ] New `control_plane add_nudge` is implemented.
+"""
+
+
+def test_parse_item():
+    """Tests that a valid backlog item is parsed correctly."""
+    parsed = parse_item(MOCK_ITEM_CONTENT)
+    assert parsed["title"] == "Implement Autonomous Configuration Management"
+    assert "This item implements the decision from" in parsed["description"]
+    assert (
+        "- [ ] New `control_plane add_command` is implemented."
+        in parsed["acceptance_criteria"]
+    )
+    assert parsed["adr_link"] == "ADR-017-autonomous-configuration-management.md"
